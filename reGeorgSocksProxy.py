@@ -392,7 +392,7 @@ if __name__ == '__main__':
 
   willem@sensepost.com / @_w_m__
   sam@sensepost.com / @trowalts
-  etienne@sensepost.com / @kamp_staaldraad
+  etienne@sensepost.com / @_staaldraad
   \033[0m
    """
     log.setLevel(logging.DEBUG)
@@ -402,12 +402,17 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--read-buff", metavar="", help="Local read buffer, max data to be sent per POST", type=int, default="1024")
     parser.add_argument("-u", "--url", metavar="", required=True, help="The url containing the tunnel script")
     parser.add_argument("-v", "--verbose", metavar="", help="Verbose output[INFO|DEBUG]", default="INFO")
+    parser.add_argument("-c", "--cert-warn-disable", help="Prevent InsecureRequestWarning messages", action='store_true', default="false")
     args = parser.parse_args()
     if (args.verbose in LEVEL):
         log.setLevel(LEVEL[args.verbose])
         log.info("Log Level set to [%s]" % args.verbose)
 
     log.info("Starting socks server [%s:%d], tunnel at [%s]" % (args.listen_on, args.listen_port, args.url))
+
+    if args.cert_warn_disable is True:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        log.info("Certificate warnings (InsecureRequestWarning) disabled")
     log.info("Checking if Georg is ready")
     if not askGeorg(args.url):
         log.info("Georg is not ready, please check url")
@@ -421,7 +426,7 @@ if __name__ == '__main__':
         try:
             sock, addr_info = servSock.accept()
             sock.settimeout(SOCKTIMEOUT)
-            log.debug("Incomming connection")
+            log.debug("Incoming connection")
             session(sock, args.url).start()
         except KeyboardInterrupt, ex:
             break
